@@ -75,13 +75,18 @@ var total = 0;
 function buy(id) {
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cartList array
-    const PRODUCT = products.find(product => product.id == id);
-    cartList.push(PRODUCT);
+    const {offer, ...PRODUCT} = products.find(product => product.id == id); 
+
+    cartList.push(PRODUCT); // The 'offer' field is not included within the cart products
+
+    console.log("buy():", cartList)
 }
 
 // Exercise 2
 function cleanCart() {
     cartList = [];
+
+    console.log("cleanCart():", cartList)
 }
 
 // Exercise 3
@@ -90,22 +95,76 @@ function calculateTotal() {
     total = cartList.reduce(
         (total, product) => total + product.price, 0
     );
+
+    console.log("calculateTotal():", total)
 }
 
 // Exercise 4
 function generateCart() {
     // Using the "cartlist" array that contains all the items in the shopping cart, 
     // generate the "cart" array that does not contain repeated items, instead each item of this array "cart" shows the quantity of product.
+    cart = [];
+    cartList.forEach(product => {
+        const IDX = cart.findIndex(val => val.id == product.id)
+
+        if (IDX < 0) {
+            cart.push({
+                ...product, 
+                quantity: 1, 
+                subtotal: product.price, 
+                subtotalWithDiscount: 0
+            })
+        } else {
+            cart[IDX].quantity++;
+            cart[IDX].subtotal += product.price
+        }
+    });
+
+    console.log("generateCart():", cart);
+
+    applyPromotionsCart()
 }
 
 // Exercise 5
 function applyPromotionsCart() {
     // Apply promotions to each item in the array "cart"
+    cart.forEach(val => {
+        const ID = val.id;
+        const Q = val.quantity;
+        const PRODUCT = products.find(product => product.id == ID);
+        const PRICE = PRODUCT.price;
+
+        if (ID == 1 && Q >= 3)
+            val.subtotalWithDiscount = Q * 10;
+        
+        if (ID == 3 && Q >= 10)
+            val.subtotalWithDiscount = Q * PRICE * 2 / 3;
+        
+    });
+
+    console.log("applyPromotionsCart():", cart)
 }
 
 // Exercise 6
 function printCart() {
     // Fill the shopping cart modal manipulating the shopping cart dom
+    const TBODY = document.getElementById("cart_list");
+
+    TBODY.innerHTML = ""
+    generateCart();
+
+    cart.forEach(val => {
+        const TOTAL = val.subtotalWithDiscount == 0 ? val.subtotal : val.subtotalWithDiscount;
+        const HTML = '<th scope="row">' + val.name
+            + '</th><td>$' + val.price
+            + '</td><td>' + val.quantity
+            + '</td><td>$' + TOTAL
+            + '</td>';
+        const ROW = document.createElement("tr");
+        ROW.innerHTML = HTML;
+
+        TBODY.append(ROW)
+    })
 }
 
 
