@@ -87,6 +87,9 @@ function cleanCart() {
 // Exercise 3
 function calculateTotal() {
     // Calculate total price of the cart using the "cartList" array
+    total = cartList.reduce(
+        (total, product) => total + product.price, 0
+    );
 }
 
 // Exercise 4
