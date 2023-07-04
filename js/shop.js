@@ -149,22 +149,44 @@ function applyPromotionsCart() {
 function printCart() {
     // Fill the shopping cart modal manipulating the shopping cart dom
     const TBODY = document.getElementById("cart_list");
-
-    TBODY.innerHTML = ""
+    const formatterDecimals = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2     
+    });
+    const formatterInteger = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0     
+    });
+    const formatedTotal = () => {
+        if (Number.isInteger(TOTAL))
+            return formatterInteger.format(TOTAL)
+        else
+            return formatterDecimals.format(TOTAL)
+    }
+    let TOTAL = 0;
+    
+    TBODY.innerHTML = "";
     generateCart();
 
     cart.forEach(val => {
-        const TOTAL = val.subtotalWithDiscount == 0 ? val.subtotal : val.subtotalWithDiscount;
-        const HTML = '<th scope="row">' + val.name
-            + '</th><td>$' + val.price
-            + '</td><td>' + val.quantity
-            + '</td><td>$' + TOTAL
-            + '</td>';
-        const ROW = document.createElement("tr");
-        ROW.innerHTML = HTML;
+        const SUBTOTAL = val.subtotalWithDiscount == 0 ? val.subtotal : val.subtotalWithDiscount;
+        TOTAL += SUBTOTAL;
+        const ROW = TBODY.insertRow(-1)
+        const TH = document.createElement("th");
 
-        TBODY.append(ROW)
-    })
+        TH.scope = "row";
+        TH.innerText = val.name;
+
+        ROW.appendChild(TH); 
+        ROW.insertCell(1).innerText = formatterDecimals.format(val.price);
+        ROW.insertCell(2).innerText = val.quantity;
+        ROW.insertCell(3).innerText = formatterDecimals.format(SUBTOTAL)
+    });
+
+    document.querySelector("span#total_price").innerText = formatedTotal()
 }
 
 
