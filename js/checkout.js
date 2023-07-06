@@ -7,38 +7,79 @@ const INPUTS = document.querySelectorAll('form.form input');
 const getInputData = (input) => {
 	const FIELD = input.id.substring(1);
 	const NAME = FIELD == "LastN" ? "last name" : FIELD.toLowerCase();
-	const ERROR = document.getElementById("error" + field);
+	const ERROR = document.getElementById("error" + FIELD);
 
-	return {field: FIELD, name: NAME, error: ERROR}
+	return {FIELD: FIELD, NAME: NAME, ERROR: ERROR}
 }
-const valRequired = (input) => {
-	const {field, name, error} = getInputData(input);
+const valMinLength = (input, trim, isName, minLength) => {
+	const {NAME} = getInputData(input);
+	let VALUE = input.value;
+	let TESTVALUE = VALUE; 
 
-	if (input.value.length < 3 )
-		return "The " + name + " is required and must have, at least, 3 characters.";
+	if (trim || isName) {
+		VALUE = VALUE.trim();
+		TESTVALUE = VALUE
+	}
+
+	if (isName) {
+		VALUE = VALUE.replace(/\s+/g, ' ');
+		TESTVALUE = VALUE.replace(/\s+/g, '')
+	}
 	
+	input.value = VALUE;
+
+	if (minLength == 0 && TESTVALUE.length > 0)
+		return "The " + NAME + " is required.";
+
+	if (TESTVALUE.length < minLength) {
+		if (minLength == 1)
+			return "The " + NAME + " is required and must have, at least, one character."
+		else
+			return "The " + NAME + " is required and must have, at least, " + minLength + " characters.";
+	}
+
 	return ""
 }
-const valOnlyCharacters = (input) => {
-	const {field, name, error} = getInputData(input);
+// Must be checked ater the minimum length validation
+const valOnlyCharacters = (input, withSpaces) => {
+	const VALUE = input.value;
+	let REGEXP = /[a-zaeiouàèìòùáéíóúäëïöüÀÈÌÒÙÁÉÍÓÚÄËÏÖÜ·'ñÑ]+/g;
 
-	if (!/[\sa-zaeiouàèìòùáéíóúäëïöüÀÈÌÒÙÁÉÍÓÚÄËÏÖÜ·'ñÑ]+/.test(word))
-		return "The " + name + " must have only letters.";
-	
+	if (withSpaces)
+		REGEXP = /[\sa-zaeiouàèìòùáéíóúäëïöüÀÈÌÒÙÁÉÍÓÚÄËÏÖÜ·'ñÑ]+/g;
+
+	const MATCH = VALUE.match(REGEXP);
+
+	input.value = VALUE;
+
+	if (MATCH == null || MATCH != VALUE) {
+		if (withSpaces)
+			return "The " + NAME + " must have only letters and spaces."
+		else
+			return "The " + NAME + " must have only letters.";
+	}
+
 	return ""
 }
 const validateInput = (input) => {
-	const {field, name, error} = getInputData(input);
-	const ERROR_TEXT = valRequired(input)
+	const {FIELD, ERROR} = getInputData(input);
+	let ERROR_TEXT = ""
+console.log(input, FIELD)	
+	if (new Set(['Name', 'LastN']).has(FIELD)) {
+		ERROR_TEXT = valMinLength(input, true, true, 3)
+console.log(ERROR_TEXT)
+		if (!ERROR_TEXT.length) ERROR_TEXT = valOnlyCharacters(input, true);
+	}
 
-	error.innerText = ERROR_TEXT
+	ERROR.innerText = ERROR_TEXT
+
 	if (!ERROR_TEXT.length ) {
 		input.classList.remove('is-invalid');
 		return
 	}
 	ERRORS++;
 	input.classList.add('is-invalid');
-	FORM.classList.remove('was-validated');
+	//FORM.classList.remove('was-validated');
 	// const validation = () => {
 	// 	if (re01.test(email.value)) {
 	// 		email.classList.remove('is-invalid');
@@ -88,17 +129,17 @@ const validateInput = (input) => {
 	// }
 
 }
-const validateAll = () => {
+const validate = () => {
 	// INPUTS.prototype.slice.call(input)
 	// 	.forEach(input => validateInput(input))
 	ERRORS = 0;
-	
-	INPUTS.forEach(input => validateInput(input))
+console.log(INPUTS)
+	INPUTS.forEach(INPUT => validateInput(INPUT))
 
 	if (!ERRORS) {
-		form.classList.add('was-validated');
-		setTimeout(function () {
-			form.classList.remove('was-validated');
+		FORM.classList.add('was-validated');
+		setTimeout(() => {
+			FORM.classList.remove('was-validated');
 		}, 2500)
 	}
 }
