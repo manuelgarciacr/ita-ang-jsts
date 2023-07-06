@@ -128,17 +128,17 @@ function generateCart() {
 // Exercise 5
 function applyPromotionsCart() {
     // Apply promotions to each item in the array "cart"
-    cart.forEach(val => {
-        const ID = val.id;
-        const Q = val.quantity;
+    cart.forEach(product => {
+        const ID = product.id;
+        const Q = product.quantity;
         const PRODUCT = products.find(product => product.id == ID);
         const PRICE = PRODUCT.price;
 
         if (ID == 1 && Q >= 3)
-            val.subtotalWithDiscount = Q * 10;
+            product.subtotalWithDiscount = Q * 10;
         
         if (ID == 3 && Q >= 10)
-            val.subtotalWithDiscount = Q * PRICE * 2 / 3;
+            product.subtotalWithDiscount = Q * PRICE * 2 / 3;
         
     });
 
@@ -169,7 +169,7 @@ function printCart() {
     let TOTAL = 0;
     
     TBODY.innerHTML = "";
-    generateCart();
+    //generateCart();
 
     cart.forEach(val => {
         const SUBTOTAL = val.subtotalWithDiscount == 0 ? val.subtotal : val.subtotalWithDiscount;
@@ -197,12 +197,55 @@ function addToCart(id) {
     // Refactor previous code in order to simplify it 
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cart array or update its quantity in case it has been added previously.
+    const {offer, ...PRODUCT} = products.find(product => product.id == id); 
+    const IDX = cart.findIndex(val => val.id == PRODUCT.id)
+    
+    if (IDX < 0) {
+        cart.push({
+            ...PRODUCT, 
+            quantity: 1, 
+            subtotal: PRODUCT.price, 
+            subtotalWithDiscount: 0
+        })
+    } else {
+        cart[IDX].quantity++;
+        cart[IDX].subtotal += PRODUCT.price;
+        const Q = cart[IDX].quantity;
+        const PRICE = PRODUCT.price;
+
+        if (id == 1 && Q >= 3)
+            cart[IDX].subtotalWithDiscount = Q * 10;
+        
+        if (id == 3 && Q >= 10)
+            cart[IDX].subtotalWithDiscount = Q * PRICE * 2 / 3
+    }
+    
 }
 
 // Exercise 8
 function removeFromCart(id) {
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cartList array
+    const {offer, ...PRODUCT} = products.find(product => product.id == id); 
+    const IDX = cart.findIndex(val => val.id == PRODUCT.id)
+
+    if (IDX >= 0) {
+        cart[IDX].quantity--;
+        cart[IDX].subtotal -= PRODUCT.price;
+        const Q = cart[IDX].quantity;
+        const PRICE = PRODUCT.price;
+
+        if (Q <= 0) {
+            cart.splice(IDX, 1);
+            return
+        }
+        
+        if (id == 1 && Q >= 3)
+            cart[IDX].subtotalWithDiscount = Q * 10;
+        
+        if (id == 3 && Q >= 10)
+            cart[IDX].subtotalWithDiscount = Q * PRICE * 2 / 3
+    }
 }
 
 function open_modal(){
